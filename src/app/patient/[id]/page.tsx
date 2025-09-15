@@ -1,41 +1,31 @@
 "use client";
 import { usePathname } from "next/navigation";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect } from "react";
 import PatientDetails from "@/components/PatientDetails";
+import { useAppDispatch, useAppSelector } from "@/lib/store";
+import { fetchPatientDetails, setPatientTab, updatePatientDemographics } from "@/lib/slices/patientsSlice";
 
 export default function PatientDetailsPage() {
   const pathname = usePathname();
-  const id = pathname.split("/").pop();
-
-  const [data, setData] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  const load = useCallback(() => {
-    if (!id) return;
-    setLoading(true);
-    setError(null);
-    fetch(`/api/modmed/patient/${id}`)
-      .then(async (res) => {
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || "Failed to load");
-        setData(json);
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [id]);
+  const id = pathname.split("/").pop()!;
+  const dispatch = useAppDispatch();
+  const details = useAppSelector((s) => s.patients.details[id] || { data: null, loading: true, error: null, tab: "demo", saving: false });
 
   useEffect(() => {
-    load();
-  }, [load]);
+    if (id) dispatch(fetchPatientDetails(id));
+  }, [id, dispatch]);
 
-  if (loading) return <div className="p-4">Loading patient details...</div>;
-  if (error) return <div className="p-4 text-red-600">{error}</div>;
-  if (!data || !data.patient) return <div className="p-4">No patient found</div>;
+  if (details.loading) return <div className="p-4">Loading patient details...</div>;
+  if (details.error) return <div className="p-4 text-red-600">{details.error}</div>;
+  if (!details.data || !details.data.patient) return <div className="p-4">No patient found</div>;
 
   return (
     <div className="p-4">
-      <PatientDetails data={data} onRefresh={load} patientId={id!} />
+      <PatientDetails
+        data={details.data}
+        onRefresh={() => dispatch(fetchPatientDetails(id))}
+        patientId={id}
+      />
     </div>
   );
 }

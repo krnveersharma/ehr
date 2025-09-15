@@ -25,7 +25,6 @@ async function fetchAccessToken(): Promise<string> {
 async function getAccessToken(): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
   if (cachedAccessToken && cachedTokenExpiryEpochSec && cachedTokenExpiryEpochSec - now > 60) {
-    console.log("cachedAccessToken is: ", cachedAccessToken);
     return cachedAccessToken;
   }
   return fetchAccessToken();

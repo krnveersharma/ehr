@@ -1,49 +1,40 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useAppDispatch, useAppSelector } from "@/lib/store";
+import { fetchPatients, setListFilters } from "@/lib/slices/patientsSlice";
 
 export default function PatientListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [bundle, setBundle] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const count = Number(searchParams.get("count") || 10);
-  const pageUrl = searchParams.get("pageUrl") || undefined;
-  const name = searchParams.get("name") || "";
-  const id = searchParams.get("id") || "";
-  const birthDate = searchParams.get("birthdate") || "";
+  const dispatch = useAppDispatch();
+  const { bundle, loading, error, filters } = useAppSelector((s) => s.patients.list as any);
 
   useEffect(() => {
-    setLoading(true);
-    setError(null);
-    const body: any = { count, pageUrl };
-    if (name) body.name = name;
-    if (id) body.id = id;
-    if (birthDate) body.birthDate = birthDate;
+    const count = Number(searchParams.get("count") || 10);
+    const pageUrl = searchParams.get("pageUrl") || undefined;
+    const name = searchParams.get("name") || undefined;
+    const id = searchParams.get("id") || undefined;
+    const birthDate = searchParams.get("birthdate") || undefined;
+    dispatch(setListFilters({ count, pageUrl, name, id, birthDate }));
+  }, [searchParams, dispatch]);
 
-    fetch(`/api/modmed/patient`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
-      .then(async (res) => {
-        const json = await res.json();
-        if (!res.ok || json.error) throw new Error(json.error || "Failed to load patients");
-        setBundle(json);
-      })
-      .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
-  }, [count, pageUrl, name, id, birthDate]);
+  useEffect(() => {
+    dispatch(fetchPatients());
+  }, [dispatch, filters]);
 
   const entries = bundle?.entry || [];
 
   const nextLink = useMemo(() => bundle?.link?.find((l: any) => l.relation === "next")?.url, [bundle]);
   const prevLink = useMemo(() => bundle?.link?.find((l: any) => l.relation === "previous")?.url, [bundle]);
 
-  function setFilters(next: Record<string, string | undefined>) {
+  function setFilters(next: Record<string, string | number | undefined>) {
     const sp = new URLSearchParams();
-    sp.set("count", String(next.count || count));
-    if (next.name ?? name) sp.set("name", (next.name ?? name)!);
-    if (next.id ?? id) sp.set("id", (next.id ?? id)!);
-    if (next.birthdate ?? birthDate) sp.set("birthdate", (next.birthdate ?? birthDate)!);
-    if (next.pageUrl) sp.set("pageUrl", next.pageUrl);
+    sp.set("count", String(next.count ?? filters.count));
+    if (next.name ?? filters.name) sp.set("name", String(next.name ?? filters.name));
+    if (next.id ?? filters.id) sp.set("id", String(next.id ?? filters.id));
+    if (next.birthdate ?? filters.birthDate) sp.set("birthdate", String(next.birthdate ?? filters.birthDate));
+    if (next.pageUrl) sp.set("pageUrl", String(next.pageUrl));
     router.push(`/patient?${sp.toString()}`);
   }
 
@@ -59,7 +50,7 @@ export default function PatientListPage() {
         <div className="flex items-center gap-2">
           <label className="text-sm">Page size</label>
           <select
-            value={count}
+            value={filters.count}
             onChange={(e) => setFilters({ count: e.target.value })}
             className="border rounded px-2 py-1"
           >
@@ -84,15 +75,15 @@ export default function PatientListPage() {
       >
         <div className="flex flex-col">
           <label className="text-sm">Name</label>
-          <input name="name" defaultValue={name} className="border rounded px-2 py-1" placeholder="e.g. Smith" />
+          <input name="name" defaultValue={filters.name || ""} className="border rounded px-2 py-1" placeholder="e.g. Smith" />
         </div>
         <div className="flex flex-col">
           <label className="text-sm">ID</label>
-          <input name="id" defaultValue={id} className="border rounded px-2 py-1" placeholder="FHIR Patient id" />
+          <input name="id" defaultValue={filters.id || ""} className="border rounded px-2 py-1" placeholder="FHIR Patient id" />
         </div>
         <div className="flex flex-col">
           <label className="text-sm">Birth date</label>
-          <input type="date" name="birthdate" defaultValue={birthDate} className="border rounded px-2 py-1" />
+          <input type="date" name="birthdate" defaultValue={filters.birthDate || ""} className="border rounded px-2 py-1" />
         </div>
         <div className="flex items-end">
           <button type="submit" className="bg-black text-white px-3 py-2 rounded">Search</button>
