@@ -104,12 +104,13 @@ export async function cancelAppointment(id: string): Promise<any> {
   return res.json();
 }
 
-export async function searchAvailabilityByType(params: { 
-  appointmentType: string; 
-  start: string; 
-  end: string; 
+export async function searchAvailabilityByType(params: {
+  appointmentType: string;
+  start: string;
+  end: string;
   count?: number;
   locationId?: string;
+  practitionerId?: string;
 }): Promise<any> {
   const qs = new URLSearchParams();
   qs.set("appointmentType", params.appointmentType);
@@ -118,12 +119,16 @@ export async function searchAvailabilityByType(params: {
   if (params.count) qs.set("count", String(params.count));
 
   if (params.locationId) {
-    const identifierValue = `http://www.hl7.org/fhir/v2/0203/index.html#v2-0203-FI|${params.locationId}`;
-    qs.set("identifier", encodeURIComponent(identifierValue));
+    const locationIdentifier = `http://www.hl7.org/fhir/v2/0203/index.html#v2-0203-FI|${params.locationId}`;
+    qs.append("identifier", encodeURIComponent(locationIdentifier));
+  }
+
+  if (params.practitionerId) {
+    const practitionerIdentifier = `http://www.hl7.org/fhir/v2/0203/index.html#v2-0203-PRN|${params.practitionerId}`;
+    qs.append("identifier", encodeURIComponent(practitionerIdentifier));
   }
 
   const res = await fetch(`/api/modmed/slot?${qs.toString()}`);
   if (!res.ok) throw new Error(await res.text());
   return res.json();
 }
-

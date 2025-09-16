@@ -18,6 +18,7 @@ export type AppointmentsState = {
   slotStart: string;
   slotEnd: string;
   bookingPatientId: string;
+  availabilityPractitioner: string;
   addProviderOpen: boolean;
   availability: any[];
   availabilityLoading: boolean;
@@ -42,6 +43,7 @@ const initialState: AppointmentsState = {
   slotStart: "",
   slotEnd: "",
   bookingPatientId: "",
+  availabilityPractitioner: "",
   addProviderOpen: false,
   availability: [],
   availabilityLoading: false,
@@ -152,10 +154,20 @@ export const createProvider = createAsyncThunk<any, any>(
   }
 );
 
-export const fetchAvailabilityByType = createAsyncThunk<any[], { appointmentType: string; start: string; end: string, locationId: string }>(
+export const fetchAvailabilityByType = createAsyncThunk<
+  any[],
+  { appointmentType: string; start: string; end: string; locationId?: string; practitionerId?: string }
+>(
   "appointments/fetchAvailabilityByType",
-  async ({ appointmentType, start, end, locationId }) => {
-    const bundle = await searchAvailabilityByType({ appointmentType, start, end, count: 100, locationId });
+  async ({ appointmentType, start, end, locationId, practitionerId }) => {
+    const bundle = await searchAvailabilityByType({
+      appointmentType,
+      start,
+      end,
+      count: 100,
+      locationId,
+      practitionerId,
+    });
     return bundle.entry || [];
   }
 );
@@ -199,6 +211,7 @@ const appointmentsSlice = createSlice({
     clearError(state) { state.error = null; },
     setAvailabilityStart(state, action: PayloadAction<string>) { state.availabilityStart = action.payload; },
     setAvailabilityEnd(state, action: PayloadAction<string>) { state.availabilityEnd = action.payload; },
+    setAvailabilityPractitioner: (s, a: PayloadAction<string>) => { s.availabilityPractitioner = a.payload; },
   },
   extraReducers: (builder) => {
     builder
@@ -269,6 +282,7 @@ export const {
   setAvailabilityStart,
   setAvailabilityEnd,
   setAvailabilityLocation,
+  setAvailabilityPractitioner
 } = appointmentsSlice.actions;
 
 export default appointmentsSlice.reducer; 
