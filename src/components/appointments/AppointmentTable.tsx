@@ -1,4 +1,5 @@
 "use client";
+import { formatReadableDateTime } from "@/app/utils/humanReadableDate";
 import React from "react";
 
 export default function AppointmentTable({
@@ -33,11 +34,11 @@ export default function AppointmentTable({
           ) : appointments.length ? (
             appointments.map((a: any) => (
               <tr key={a.id}>
-                <td className="p-2 border">{a.start}</td>
-                <td className="p-2 border">{a.end}</td>
+                <td className="p-2 border">{formatReadableDateTime(a.start)}</td>
+                <td className="p-2 border">{formatReadableDateTime(a.end)}</td>
                 <td className="p-2 border">{a.status}</td>
                 <td className="p-2 border">
-                  <button className="px-2 py-1 border rounded mr-2" onClick={() => onReschedule(a)}>Reschedule</button>
+                  <button className="px-2 py-1 border rounded mr-2" onClick={() => onReschedule(a)}>Update</button>
                   <button className="px-2 py-1 border rounded" onClick={() => onCancel(a.id)}>Cancel</button>
                 </td>
               </tr>

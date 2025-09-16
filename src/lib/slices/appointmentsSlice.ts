@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { searchAvailabilityByType } from "@/lib/appointment";
+import { Filter } from "@/interfaces/AppointmentFilter";
 
 export type Provider = any;
 export type Appointment = any;
@@ -24,7 +25,7 @@ export type AppointmentsState = {
   availabilityStart: string;
   availabilityEnd: string;
   availabilityLocation: string;
-  locations: { id: string; name: string }[]; 
+  locations: { id: string; name: string }[];
   types: any[];
 };
 
@@ -88,19 +89,26 @@ export const fetchAppointmentTypes = createAsyncThunk<any[]>(
 );
 
 
-export const fetchAppointments = createAsyncThunk<Appointment[], void, { state: { appointments: AppointmentsState } }>(
+export const fetchAppointments = createAsyncThunk(
   "appointments/fetchAppointments",
-  async (_, { getState }) => {
-    const { date, selectedProviderId, patientId } = getState().appointments;
-    const params = new URLSearchParams();
-    if (date) params.set("date", date);
-    if (selectedProviderId) params.set("practitionerId", selectedProviderId);
-    if (patientId) params.set("patientId", patientId);
-    params.set("_count", "50");
-    const res = await fetch(`/api/modmed/appointment?${params.toString()}`);
-    const json = await res.json();
-    if (!res.ok || json.error) throw new Error(json.error || "Failed to load appointments");
-    return (json.entry || []).map((e: any) => e.resource) as Appointment[];
+  async (filter: Filter | undefined) => {
+    const qs = new URLSearchParams();
+    if (filter?.start && filter?.end) {
+      qs.set("start", filter.start);
+      qs.set("end", filter.end);
+    }
+    if (filter?.patientId) {
+      qs.set("patient", `Patient/${filter.patientId}`);
+    }
+    if (filter?.practitionerId) {
+      qs.set("practitioner", `Practitioner/${filter.practitionerId}`);
+    }
+
+    const url = `/api/modmed/appointment${qs.toString() ? "?" + qs.toString() : ""}`;
+
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(await res.text());
+    return res.json();
   }
 );
 
@@ -144,13 +152,27 @@ export const createProvider = createAsyncThunk<any, any>(
   }
 );
 
-export const fetchAvailabilityByType = createAsyncThunk<any[], { appointmentType: string; start: string; end: string,locationId:string }>(
+export const fetchAvailabilityByType = createAsyncThunk<any[], { appointmentType: string; start: string; end: string, locationId: string }>(
   "appointments/fetchAvailabilityByType",
-  async ({ appointmentType, start, end ,locationId}) => {
-    const bundle = await searchAvailabilityByType({ appointmentType, start, end, count: 100,locationId });
+  async ({ appointmentType, start, end, locationId }) => {
+    const bundle = await searchAvailabilityByType({ appointmentType, start, end, count: 100, locationId });
     return bundle.entry || [];
   }
 );
+
+export const updateAppointment = createAsyncThunk<void, { id: string; data: any }>(
+  "appointments/updateAppointment",
+  async ({ id, data }) => {
+    const res = await fetch(`/api/modmed/appointment/${id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json.error) throw new Error(json.error || "Failed to update appointment");
+  }
+);
+
 
 const appointmentsSlice = createSlice({
   name: "appointments",
@@ -177,28 +199,31 @@ const appointmentsSlice = createSlice({
     clearError(state) { state.error = null; },
     setAvailabilityStart(state, action: PayloadAction<string>) { state.availabilityStart = action.payload; },
     setAvailabilityEnd(state, action: PayloadAction<string>) { state.availabilityEnd = action.payload; },
-    },
+  },
   extraReducers: (builder) => {
     builder
-    .addCase(fetchLocations.pending, (state) => {
-      state.loading = true;
-      state.error = null;
-    })
-    .addCase(fetchLocations.fulfilled, (state, action) => {
-      state.loading = false;
-      state.locations = action.payload;
-    })
-    .addCase(fetchLocations.rejected, (state, action) => {
-      state.loading = false;
-      state.error = action.error.message || "Failed to load locations";
-    })
-    .addCase(fetchAppointmentTypes.pending, (state) => { state.loading = true; state.error = null; })
-    .addCase(fetchAppointmentTypes.fulfilled, (state, action) => { state.loading = false; state.types = action.payload; })
-    .addCase(fetchAppointmentTypes.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to load appointment types"; })
+      .addCase(fetchLocations.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchLocations.fulfilled, (state, action) => {
+        state.loading = false;
+        state.locations = action.payload;
+      })
+      .addCase(fetchLocations.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.error.message || "Failed to load locations";
+      })
+      .addCase(fetchAppointmentTypes.pending, (state) => { state.loading = true; state.error = null; })
+      .addCase(fetchAppointmentTypes.fulfilled, (state, action) => { state.loading = false; state.types = action.payload; })
+      .addCase(fetchAppointmentTypes.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to load appointment types"; })
       .addCase(fetchProviders.fulfilled, (state, action) => { state.providers = action.payload; })
       .addCase(fetchAppointments.pending, (state) => { state.loading = true; state.error = null; })
-      .addCase(fetchAppointments.fulfilled, (state, action) => { state.loading = false; state.appointments = action.payload; })
-      .addCase(fetchAppointments.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to load"; })
+      .addCase(fetchAppointments.fulfilled, (state, action) => {
+        state.loading = false;
+        const bundle = action.payload;
+        state.appointments = bundle.entry?.map((e: any) => e.resource) || [];
+      }).addCase(fetchAppointments.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to load"; })
       .addCase(cancelAppointment.pending, (state) => { state.loading = true; state.error = null; })
       .addCase(cancelAppointment.fulfilled, (state) => { state.loading = false; })
       .addCase(cancelAppointment.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to cancel"; })
@@ -210,8 +235,20 @@ const appointmentsSlice = createSlice({
       .addCase(createProvider.rejected, (state, action) => { state.loading = false; state.error = action.error.message || "Failed to create provider"; })
       .addCase(fetchAvailabilityByType.pending, (state) => { state.availabilityLoading = true; state.error = null; state.availability = []; })
       .addCase(fetchAvailabilityByType.fulfilled, (state, action) => { state.availabilityLoading = false; state.availability = action.payload; })
-      .addCase(fetchAvailabilityByType.rejected, (state, action) => { state.availabilityLoading = false; state.error = action.error.message || "Failed to load availability"; });
-  }
+      .addCase(fetchAvailabilityByType.rejected, (state, action) => { state.availabilityLoading = false; state.error = action.error.message || "Failed to load availability"; })
+      .addCase(updateAppointment.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+    .addCase(updateAppointment.fulfilled, (state) => {
+      state.loading = false;
+    })
+    .addCase(updateAppointment.rejected, (state, action) => {
+      state.loading = false;
+      state.error = action.error.message || "Failed to update appointment";
+    });
+
+}
 });
 
 export const {
