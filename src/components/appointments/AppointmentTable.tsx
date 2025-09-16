@@ -1,6 +1,11 @@
 "use client";
 import { formatReadableDateTime } from "@/app/utils/humanReadableDate";
-import React from "react";
+import React, { useState } from "react";
+import UpdateAppointmentModal from "./UpdateAppointmentModal";
+import { updateAppointment } from "@/lib/slices/appointmentsSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch, useAppDispatch } from "@/lib/store";
+import { applyAppointmentFilter } from "@/lib/slices/appointmentFIlterSlice";
 
 export default function AppointmentTable({
   loading,
@@ -13,6 +18,42 @@ export default function AppointmentTable({
   onReschedule: (appt: any) => void;
   onCancel: (id: string) => void;
 }) {
+  const [selectedAppointment, setSelectedAppointment] = useState(null)
+  const dispatch = useAppDispatch()
+
+  const onSubmit=async(data: { id: string, data: any })=>{
+    await dispatch(updateAppointment({ id: data.id, data }))
+    dispatch(applyAppointmentFilter());
+  }
+  
+    const handleCancel = (appointment:any) => {
+    const minutesDuration = Math.ceil(
+      (new Date(appointment.end).getTime() - new Date(appointment.start).getTime()) / 60000
+    );
+    const isNewPatient=appointment.supportingInformation?.[0]?.identifier?.value === "true"
+
+    const data = {
+      ...appointment,
+      start:appointment.start,
+      end:appointment.end,
+      minutesDuration,
+      status:"cancelled",
+      description:appointment.description,
+      supportingInformation: [
+        {
+          identifier: {
+            system: "NEW_PATIENT",
+            value: isNewPatient ? "true" : "false",
+          },
+          display: `New Patient: ${isNewPatient}`,
+        },
+      ],
+    };
+
+    onSubmit(data);
+  };
+
+
   return (
     <div className="overflow-x-auto">
       <table className="min-w-full border text-sm">
@@ -38,8 +79,8 @@ export default function AppointmentTable({
                 <td className="p-2 border">{formatReadableDateTime(a.end)}</td>
                 <td className="p-2 border">{a.status}</td>
                 <td className="p-2 border">
-                  <button className="px-2 py-1 border rounded mr-2" onClick={() => onReschedule(a)}>Update</button>
-                  <button className="px-2 py-1 border rounded" onClick={() => onCancel(a.id)}>Cancel</button>
+                  <button className="px-2 py-1 border rounded mr-2" onClick={() => setSelectedAppointment(a)}>Update</button>
+                  <button className="px-2 py-1 border rounded" onClick={()=>handleCancel(a)}>Cancel</button>
                 </td>
               </tr>
             ))
@@ -52,6 +93,13 @@ export default function AppointmentTable({
           )}
         </tbody>
       </table>
+      {selectedAppointment && (
+        <UpdateAppointmentModal
+          appointment={selectedAppointment}
+          onSubmit={onSubmit}
+          onClose={() => setSelectedAppointment(null)}
+        />
+      )}
     </div>
   );
 } 

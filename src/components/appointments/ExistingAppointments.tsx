@@ -1,4 +1,12 @@
-import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  setStart,
+  setEnd,
+  setPatientId,
+  setPractitionerId,
+  applyAppointmentFilter,
+} from "@/lib/slices/appointmentFIlterSlice";  
+import { RootState, useAppDispatch} from "@/lib/store"
 import AppointmentTable from "./AppointmentTable";
 import { Filter } from "@/interfaces/AppointmentFilter";
 
@@ -17,30 +25,13 @@ export default function ExistingAppointments({
   onReschedule,
   onFilter,
 }: ExistingAppointmentsProps) {
-  const [start, setStart] = useState("");
-  const [end, setEnd] = useState("");
-  const [patientId, setPatientId] = useState("");
-  const [practitionerId, setPractitionerId] = useState("");
+  const dispatch = useAppDispatch();
+  const { start, end, patientId, practitionerId } = useSelector(
+    (state: RootState) => state.appointmentFilter
+  );
 
-  const handleSearch = () => {
-    const filter: Filter = {};
-
-    if (start && end) {
-      filter.start = new Date(`${start}T00:00:00`).toISOString();
-      filter.end = new Date(`${end}T23:59:59`).toISOString();
-    }
-    if (patientId) {
-      filter.patientId = patientId.startsWith("Patient/")
-        ? patientId.split("/")[1]
-        : patientId;
-    }
-    if (practitionerId) {
-      filter.practitionerId = practitionerId.startsWith("Practitioner/")
-        ? practitionerId.split("/")[1]
-        : practitionerId;
-    }
-
-    onFilter(filter);
+    const handleSearch = () => {
+    dispatch(applyAppointmentFilter());
   };
 
   return (
@@ -53,7 +44,7 @@ export default function ExistingAppointments({
           <input
             type="date"
             value={start}
-            onChange={(e) => setStart(e.target.value)}
+            onChange={(e) => dispatch(setStart(e.target.value))}
             className="border rounded px-2 py-1"
           />
         </div>
@@ -62,7 +53,7 @@ export default function ExistingAppointments({
           <input
             type="date"
             value={end}
-            onChange={(e) => setEnd(e.target.value)}
+            onChange={(e) => dispatch(setEnd(e.target.value))}
             className="border rounded px-2 py-1"
           />
         </div>
@@ -71,7 +62,7 @@ export default function ExistingAppointments({
           <input
             type="text"
             value={patientId}
-            onChange={(e) => setPatientId(e.target.value)}
+            onChange={(e) => dispatch(setPatientId(e.target.value))}
             className="border rounded px-2 py-1"
             placeholder="Patient/123 or 123"
           />
@@ -81,7 +72,7 @@ export default function ExistingAppointments({
           <input
             type="text"
             value={practitionerId}
-            onChange={(e) => setPractitionerId(e.target.value)}
+            onChange={(e) => dispatch(setPractitionerId(e.target.value))}
             className="border rounded px-2 py-1"
             placeholder="Practitioner/456 or 456"
           />
