@@ -22,7 +22,6 @@ export const fetchUpcomingVisits = createAsyncThunk(
   async () => {
     const res = await fetch(`/api/modmed/enquiry`);
     const data = await res.json();
-    console.log("data is: ",data)
     return data.visits;
   }
 );

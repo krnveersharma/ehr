@@ -1,7 +1,7 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useAppDispatch, useAppSelector } from "@/lib/store";
-import { fetchUpcomingVisits, setSelectedEncounter } from "@/lib/slices/encounterSlice";
+import { fetchUpcomingVisits } from "@/lib/slices/encounterSlice";
 import { formatReadableDateTime } from "../utils/humanReadableDate";
 import { useRouter } from "next/navigation";
 
@@ -15,7 +15,6 @@ export default function EncounterPage() {
         dispatch(fetchUpcomingVisits());
     }, [dispatch]);
     const handleClick = (visit: any) => {
-        console.log("visit is: ",visit)
         const practitionerId=visit.participant?.[0]?.individual.reference.split("/").pop()
         const patientId = visit.subject.reference.split("/").pop()
         router.push(`/encounter/${visit.id}?patientId=${patientId}&practitionerId=${practitionerId}`)
@@ -44,7 +43,7 @@ export default function EncounterPage() {
                             </tr>
                         </thead>
                         <tbody>
-                            {upcomingVisits.map((visit: any) => (
+                            {upcomingVisits?.map((visit: any) => (
                                 <tr key={visit.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleClick(visit)}>
                                     <td className="px-4 py-2 border">{visit.id}</td>
                                     <td className="px-4 py-2 border">{visit.subject?.display || "Unknown"}</td>

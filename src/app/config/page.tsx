@@ -14,15 +14,29 @@ export default function ConfigPage() {
     password: "",
   });
 
+  const [loading, setLoading] = useState(true); // Add a loading state
+
   useEffect(() => {
-    console.log("mod med config is: ",MODMED_CONFIG)
-    setForm(MODMED_CONFIG);
+    // Simulate fetching from localStorage
+    const savedConfig = localStorage.getItem("modmed_config");
+    if (savedConfig) {
+      setForm(JSON.parse(savedConfig));
+    } else {
+      setForm(MODMED_CONFIG);
+    }
+    setLoading(false); // Set loading to false once config is ready
   }, []);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setConfig(form);
+    localStorage.setItem("modmed_config", JSON.stringify(form));
     alert("Saved API credentials");
+  }
+
+  if (loading) {
+    // Render nothing or a spinner until config is loaded
+    return <div className="p-6 text-center">Loading...</div>;
   }
 
   return (
