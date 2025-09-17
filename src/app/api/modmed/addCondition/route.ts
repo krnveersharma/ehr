@@ -68,7 +68,6 @@ export async function POST(req: Request) {
     });
 
     const data = await response.json();
-    console.log("Response data:", data);
 
     return NextResponse.json(data, { status: response.status });
   } catch (err: any) {

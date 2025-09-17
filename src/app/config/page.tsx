@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import Cookies from "js-cookie";
 import { useModMedConfig } from "@/lib/configContext";
 import { MODMED_CONFIG } from "@/lib/config";
 
@@ -14,28 +15,37 @@ export default function ConfigPage() {
     password: "",
   });
 
-  const [loading, setLoading] = useState(true); // Add a loading state
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Simulate fetching from localStorage
-    const savedConfig = localStorage.getItem("modmed_config");
+ useEffect(() => {
+  async function loadConfig() {
+    const savedConfig = Cookies.get("modmed_config");
     if (savedConfig) {
-      setForm(JSON.parse(savedConfig));
+      const parsed = JSON.parse(savedConfig);
+      setForm(parsed);
+    } else if (config) {
+      setForm(config);
     } else {
-      setForm(MODMED_CONFIG);
+      const cfg = await MODMED_CONFIG();
+      setForm(cfg);
     }
-    setLoading(false); // Set loading to false once config is ready
-  }, []);
+    setLoading(false);
+  }
+
+  loadConfig();
+}, [config]);
+
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    // Save to cookie
+    Cookies.set("modmed_config", JSON.stringify(form), { expires: 1 }); // 1 day
+    // Update context
     setConfig(form);
-    localStorage.setItem("modmed_config", JSON.stringify(form));
     alert("Saved API credentials");
   }
 
   if (loading) {
-    // Render nothing or a spinner until config is loaded
     return <div className="p-6 text-center">Loading...</div>;
   }
 

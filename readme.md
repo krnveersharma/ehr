@@ -60,7 +60,7 @@ This guide explains how to use the EHR (Electronic Health Record) web applicatio
 ## 4. Config Page
 
 - Update and save your **ModMed API credentials**.
-- Credentials are stored in **localStorage** and used across the application.
+- Credentials are stored in **cookie** and used across the application.
 
 ---
 

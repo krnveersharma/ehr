@@ -94,7 +94,7 @@
 10.  **env compatibility**: made every data fetch of config in config.ts, just have to change access point to process.env and everything will work.
 
 #### Limitations
-**instead of integrating env details in every dashboard, i have made config tab, where have to add env details, and it will be valid across website(right now saved in localstorage)**
+**instead of integrating env details in every dashboard, i have made config tab, where have to add env details, and it will be valid across website(right now saved in cookie)**
 1. **Hardcoded Patient ID**: Medication API uses hardcoded patient ID (1254)
 2. **Limited Error Context**: Some error responses lack detailed context
 4. **Single Environment**: Limited multi-environment support

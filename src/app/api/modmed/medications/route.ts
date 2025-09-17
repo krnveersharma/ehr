@@ -28,6 +28,7 @@ export async function POST(req: NextRequest) {
     if (!patientId || !medicationCode || !medicationText) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
     }
+    const modmed=await MODMED_CONFIG()
 
     const payload = {
       resourceType: "MedicationStatement",
@@ -43,7 +44,7 @@ export async function POST(req: NextRequest) {
         text: medicationText,
       },
       subject: { 
-        reference: `${MODMED_CONFIG.baseUrl}/${MODMED_CONFIG.firmUrlPrefix}/Patient/${patientId}` ,
+        reference: `${modmed.baseUrl}/${modmed.firmUrlPrefix}/Patient/${patientId}` ,
         display: `${getFhirBase()}/Patient/${patientId}` ,
     },
       // effectivePeriod: { start: startDate || new Date().toISOString() },
@@ -54,7 +55,6 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(payload),
     });
     if (resp.status == 201) {
-      console.log('resp is: ',resp,"request is: ",payload)
       return NextResponse.json({ success: true });
     }
         return NextResponse.json({ success: false, error: {} }, { status: 500 });

@@ -1,5 +1,6 @@
 "use client";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import Cookies from "js-cookie";
 
 export type ModMedConfig = {
   baseUrl: string;
@@ -21,12 +22,12 @@ export function ConfigProvider({ children }: { children: React.ReactNode }) {
   const [config, setConfigState] = useState<ModMedConfig | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("modmed_config");
+    const saved = Cookies.get("modmed_config");
     if (saved) setConfigState(JSON.parse(saved));
   }, []);
 
   function setConfig(cfg: ModMedConfig) {
-    localStorage.setItem("modmed_config", JSON.stringify(cfg));
+    Cookies.set("modmed_config", JSON.stringify(cfg), { expires: 1 }); // expires in 1 day
     setConfigState(cfg);
   }
 

@@ -5,7 +5,6 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   try {
     const res = await fhirFetch(`/Appointment?${searchParams.toString()}`);
-    console.log("res is: ",res)
     const text = await res.text();
     if (!res.ok) return NextResponse.json({ error: text }, { status: res.status });
     return NextResponse.json(JSON.parse(text));
@@ -22,7 +21,6 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify(body),
     });
     const text = await res.text();
-    console.log("body is: ",JSON.stringify(body),"text is: ",text)
     if (!res.ok) return NextResponse.json({ error: text }, { status: res.status });
     return NextResponse.json(JSON.parse(text));
   } catch (err: any) {

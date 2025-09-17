@@ -18,22 +18,28 @@ export default function UpdateAppointmentModal({
   const [slots, setSlots] = useState<any[]>([]);
   const [loadingSlots, setLoadingSlots] = useState(false);
 
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useEffect(() => {
     const fetchSlots = async () => {
       try {
         setLoadingSlots(true);
-        const startDate = start.slice(0, 10); 
+        const startDate = start.slice(0, 10);
         const endDate = end.slice(0, 10);
 
         const params = new URLSearchParams({
-          appointmentType: appointment?.appointmentType?.coding?.[0]?.code, 
+          appointmentType: appointment?.appointmentType?.coding?.[0]?.code,
           start: startDate,
           end: endDate,
           count: "100",
         });
 
         const res = await fetch(`/api/modmed/slot?${params}`);
-        if (!res.ok) throw new Error("Failed to fetch slots");
+        if (!res.ok) return;
         const data = await res.json();
 
         setSlots(data.entry || []);
@@ -159,12 +165,13 @@ export default function UpdateAppointmentModal({
           {!loadingSlots && slots.length === 0 && (
             <p className="text-sm text-gray-500">No slots available.</p>
           )}
+          {mounted && (
           <div className="max-h-96 overflow-y-auto border rounded p-2 space-y-2">
-            {slots.map((slot: any) => (
+            {slots.map((slot: any,index) => (
               <div
-                key={slot.id}
+                key={slot.id||index}
                 className="border px-3 py-2 rounded hover:bg-gray-50 text-sm"
-                onClick={()=>{
+                onClick={() => {
                   setStart(slot.resource.start)
                   setEnd(slot.resource.end)
                 }}
@@ -178,7 +185,7 @@ export default function UpdateAppointmentModal({
                 </div>
               </div>
             ))}
-          </div>
+          </div>)}
         </div>
       </div>
     </div>

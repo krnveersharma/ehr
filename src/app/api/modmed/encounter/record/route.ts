@@ -1,4 +1,4 @@
-import { getFhirBase, MODMED_CONFIG } from "@/lib/config";
+import { getFhir, getFhirBase, MODMED_CONFIG } from "@/lib/config";
 import { fhirFetch, fhirS3Fetch } from "@/lib/fhir";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -63,8 +63,6 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    console.log(topic=="Vitals"?"18512":"18504")
-
     const documentRefPayload = {
       resourceType: "DocumentReference",
       identifier: [{ system: "filename", value: `${topic}.pdf` }],
@@ -78,7 +76,7 @@ export async function POST(req: NextRequest) {
         }],
         text: `External Visit ${topic}`,
       }],
-      subject: { reference: `${MODMED_CONFIG.baseUrl}/${MODMED_CONFIG.firmUrlPrefix}/Patient/${patientId}` },
+      subject: { reference: `${getFhir()}/Patient/${patientId}` },
       date: new Date().toISOString(),
       content: [{ attachment: { title: `${topic} Recorded`, contentType: "application/pdf", url: s3Url, creation: new Date().toISOString() } }],
     };

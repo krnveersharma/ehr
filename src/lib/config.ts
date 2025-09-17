@@ -1,10 +1,6 @@
-export type ModMedConfig = {
-  baseUrl: string;
-  firmUrlPrefix: string;
-  apiKey: string;
-  username: string;
-  password: string;
-};
+"use server"
+import { ModMedConfig } from "./configContext";
+import { cookies } from "next/headers";
 
 const ENV_FALLBACK: ModMedConfig = {
   baseUrl: process.env.NEXT_PUBLIC_MODMED_BASE_URL || "",
@@ -14,26 +10,44 @@ const ENV_FALLBACK: ModMedConfig = {
   password: process.env.NEXT_PUBLIC_MODMED_PASSWORD || "",
 };
 
-export function getActiveConfig(): ModMedConfig {
-  if (typeof window === "undefined") return ENV_FALLBACK;
 
-  const raw = localStorage.getItem("modmed_env_config");
-  if (!raw) return ENV_FALLBACK;
+export async function getActiveConfig(): Promise<ModMedConfig> {
+  if (typeof window === "undefined") {
+    const cookieStore = await cookies(); 
+    const raw = cookieStore.get("modmed_config")?.value;
+    if (!raw) return ENV_FALLBACK;
 
-  const parsed = JSON.parse(raw);
-  const env = parsed.environment || "dev";
-  return parsed[env] || ENV_FALLBACK;
+    try {
+      return JSON.parse(raw);
+    } catch {
+      return ENV_FALLBACK;
+    }
+  } else {
+    const raw = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("modmed_config="))
+      ?.split("=")[1];
+
+    if (!raw) return ENV_FALLBACK;
+
+    try {
+      return JSON.parse(decodeURIComponent(raw));
+    } catch {
+      return ENV_FALLBACK;
+    }
+  }
 }
 
-export const MODMED_CONFIG = {
-  baseUrl: getActiveConfig().baseUrl,
-  firmUrlPrefix: getActiveConfig().firmUrlPrefix,
-  apiKey: getActiveConfig().apiKey,
-  username: getActiveConfig().username,
-  password: getActiveConfig().password ,
-} as const;
+export async function MODMED_CONFIG(): Promise<ModMedConfig> {
+  return getActiveConfig();
+}
 
-export function getFhirBase(): string {
-  const cfg = getActiveConfig();
+export async function getFhirBase(): Promise<string> {
+  const cfg = await MODMED_CONFIG();
+  return `${cfg.baseUrl}/${cfg.firmUrlPrefix}/ema/fhir/v2`;
+}
+
+export async function getFhir(): Promise<string> {
+  const cfg = await MODMED_CONFIG();
   return `${cfg.baseUrl}/${cfg.firmUrlPrefix}/ema/fhir/v2`;
 }

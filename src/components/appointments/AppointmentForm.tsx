@@ -56,7 +56,6 @@ export default function AppointmentForm({
         { actor: { reference: `Patient/${patientId}` } },
       ],
     };
-console.log("resource is: ",JSON.stringify(resource))
     await onSubmit(resource);
   }
 

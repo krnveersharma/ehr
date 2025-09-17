@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
 
   try {
     const result = await searchPatients({ name, id, identifier });
-    console.log("results are: ", result);
     return NextResponse.json(result);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
