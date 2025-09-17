@@ -6,13 +6,19 @@ import { useEffect } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
-  const router=useRouter()
+  const router = useRouter()
   const linkClass = (href: string) => `px-3 py-2 rounded ${pathname === href ? "bg-black text-white" : "hover:bg-gray-100"}`;
 
-    useEffect(() => {
-    if ((!MODMED_CONFIG.apiKey || MODMED_CONFIG.apiKey.trim() === "")&&pathname!="config") {
-      router.push("/config");
+  useEffect(() => {
+    const redir = async () => {
+      const modmed = await MODMED_CONFIG()
+      if ((!modmed.apiKey || modmed.apiKey.trim() === "") && pathname != "config") {
+        router.push("/config");
+      }
     }
+
+    redir()
+
   }, [router]);
   return (
     <header className="border-b bg-white">
