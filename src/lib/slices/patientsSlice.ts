@@ -52,7 +52,10 @@ export const fetchPatients = createAsyncThunk<PatientBundle, void, { state: { pa
   }
 );
 
-export const fetchPatientDetails = createAsyncThunk<{ id: string; data: PatientDetailsBundle }, string>(
+export const fetchPatientDetails = createAsyncThunk<
+  { id: string; data: { data: PatientDetailsBundle } },
+  string
+>(
   "patients/fetchPatientDetails",
   async (id: string) => {
     const res = await fetch(`/api/modmed/patient/${id}`);
@@ -61,6 +64,7 @@ export const fetchPatientDetails = createAsyncThunk<{ id: string; data: PatientD
     return { id, data: json };
   }
 );
+
 
 export const updatePatientDemographics = createAsyncThunk<{ id: string }, { id: string; updates: any }>(
   "patients/updatePatientDemographics",
@@ -101,7 +105,7 @@ const patientsSlice = createSlice({
         const { id, data } = action.payload;
         if (!state.details[id]) state.details[id] = { data: null, loading: false, error: null, tab: "demo", saving: false };
         state.details[id].loading = false;
-        state.details[id].data = data;
+        state.details[id].data = data.data;
       })
       .addCase(fetchPatientDetails.rejected, (state, action) => {
         const id = action.meta.arg;

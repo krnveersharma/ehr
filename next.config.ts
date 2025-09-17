@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/',
+        destination: '/patient',
+        permanent: true,
+      },
+    ];
+  },
   env:{
     NEXT_PUBLIC_MODMED_BASE_URL:process.env.NEXT_PUBLIC_MODMED_BASE_URL,
     NEXT_PUBLIC_MODMED_FIRM_PREFIX:process.env.NEXT_PUBLIC_MODMED_FIRM_PREFIX,

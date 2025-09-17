@@ -10,7 +10,7 @@ export default function PatientDetailsPage() {
   const id = pathname.split("/").pop()!;
   const dispatch = useAppDispatch();
   const details = useAppSelector((s) => s.patients.details[id] || { data: null, loading: true, error: null, tab: "demo", saving: false });
-
+  
   useEffect(() => {
     if (id) dispatch(fetchPatientDetails(id));
   }, [id, dispatch]);

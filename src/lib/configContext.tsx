@@ -9,48 +9,29 @@ export type ModMedConfig = {
   password: string;
 };
 
-type StoredConfig = {
-  environment: "dev" | "prod";
-  dev: ModMedConfig | null;
-  prod: ModMedConfig | null;
-};
-
 const ConfigContext = createContext<{
-  config: StoredConfig;
-  setConfig: (env: "dev" | "prod", cfg: ModMedConfig) => void;
-  switchEnv: (env: "dev" | "prod") => void;
+  config: ModMedConfig | null;
+  setConfig: (cfg: ModMedConfig) => void;
 }>({
-  config: { environment: "dev", dev: null, prod: null },
+  config: null,
   setConfig: () => {},
-  switchEnv: () => {},
 });
 
 export function ConfigProvider({ children }: { children: React.ReactNode }) {
-  const [config, setConfigState] = useState<StoredConfig>({
-    environment: "dev",
-    dev: null,
-    prod: null,
-  });
+  const [config, setConfigState] = useState<ModMedConfig | null>(null);
 
   useEffect(() => {
-    const saved = localStorage.getItem("modmed_env_config");
+    const saved = localStorage.getItem("modmed_config");
     if (saved) setConfigState(JSON.parse(saved));
   }, []);
 
-  function setConfig(env: "dev" | "prod", cfg: ModMedConfig) {
-    const next = { ...config, [env]: cfg };
-    localStorage.setItem("modmed_env_config", JSON.stringify(next));
-    setConfigState(next);
-  }
-
-  function switchEnv(env: "dev" | "prod") {
-    const next = { ...config, environment: env };
-    localStorage.setItem("modmed_env_config", JSON.stringify(next));
-    setConfigState(next);
+  function setConfig(cfg: ModMedConfig) {
+    localStorage.setItem("modmed_config", JSON.stringify(cfg));
+    setConfigState(cfg);
   }
 
   return (
-    <ConfigContext.Provider value={{ config, setConfig, switchEnv }}>
+    <ConfigContext.Provider value={{ config, setConfig }}>
       {children}
     </ConfigContext.Provider>
   );

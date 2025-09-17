@@ -74,17 +74,10 @@ export default function PatientList() {
         className="mb-4 grid grid-cols-1 sm:grid-cols-4 gap-3"
       >
         <div className="flex flex-col">
-          <label className="text-sm">Name</label>
-          <input name="name" defaultValue={filters.name || ""} className="border rounded px-2 py-1" placeholder="e.g. Smith" />
-        </div>
-        <div className="flex flex-col">
           <label className="text-sm">ID</label>
           <input name="id" defaultValue={filters.id || ""} className="border rounded px-2 py-1" placeholder="FHIR Patient id" />
         </div>
-        <div className="flex flex-col">
-          <label className="text-sm">Birth date</label>
-          <input type="date" name="birthdate" defaultValue={filters.birthDate || ""} className="border rounded px-2 py-1" />
-        </div>
+        
         <div className="flex items-end">
           <button type="submit" className="bg-black text-white px-3 py-2 rounded">Search</button>
         </div>

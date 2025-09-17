@@ -91,8 +91,10 @@
 7. **Error Handling**: Comprehensive error handling with user-friendly messages
 8. **Performance Optimization**: Token caching, used server side for hitting main api requests, used redux state rather than props drillings
 9. **Safely Hitting main modmed server**: Integrated every api in server side and user hits to nextjs server nd then request goes to endpoint, so user hasnt been exposed to main api(also better for future if we want to do some internal api management)
+10.  **env compatibility**: made every data fetch of config in config.ts, just have to change access point to process.env and everything will work.
 
 #### Limitations
+**instead of integrating env details in every dashboard, i have made config tab, where have to add env details, and it will be valid across website(right now saved in localstorage)**
 1. **Hardcoded Patient ID**: Medication API uses hardcoded patient ID (1254)
 2. **Limited Error Context**: Some error responses lack detailed context
 4. **Single Environment**: Limited multi-environment support

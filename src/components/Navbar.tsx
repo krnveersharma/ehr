@@ -12,7 +12,6 @@ export default function Navbar() {
         <div className="flex items-center justify-between h-14">
           <Link href="/" className="font-semibold">EHR</Link>
           <nav className="flex items-center gap-1 text-sm">
-            <Link href="/" className={linkClass("/")}>Home</Link>
             <Link href="/patient" className={linkClass("/patient")}>
               Patients
             </Link>
