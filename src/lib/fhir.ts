@@ -13,6 +13,7 @@ async function fetchAccessToken(): Promise<string> {
   });
   const text = await response.text();
   if (!response.ok) {
+    console.log('error is: ',response)
     throw new Error(`Token Request Failed: ${text}`);
   }
   const data = JSON.parse(text);
