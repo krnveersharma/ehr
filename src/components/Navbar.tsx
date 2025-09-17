@@ -1,11 +1,19 @@
 'use client'
+import { MODMED_CONFIG } from "@/lib/config";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function Navbar() {
   const pathname = usePathname();
+  const router=useRouter()
   const linkClass = (href: string) => `px-3 py-2 rounded ${pathname === href ? "bg-black text-white" : "hover:bg-gray-100"}`;
 
+    useEffect(() => {
+    if ((!MODMED_CONFIG.apiKey || MODMED_CONFIG.apiKey.trim() === "")&&pathname!="config") {
+      router.push("/config");
+    }
+  }, [router]);
   return (
     <header className="border-b bg-white">
       <div className="max-w-6xl mx-auto px-4">

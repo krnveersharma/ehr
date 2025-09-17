@@ -1,4 +1,5 @@
 "use client";
+import { fhirFetch } from "@/lib/fhir";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
@@ -12,16 +13,9 @@ export default function PatientTable() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/modmed/patient", {
+      const response = await fhirFetch("/api/modmed/patient", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          baseUrl: "https://stage.ema-api.com/ema-dev/firm",
-          firmUrlPrefix: "entpmsandbox393",
-          apiKey: "f69902ad-c2bc-4b30-aa89-e136d26a04b3",
-          username: "fhir_pmOYS",
-          password: "NmrxdT7I34",
-        }),
       });
 
       const data = await response.json();
