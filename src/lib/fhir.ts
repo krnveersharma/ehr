@@ -5,10 +5,10 @@ let cachedTokenExpiryEpochSec: number | null = null;
 
 async function fetchAccessToken(): Promise<string> {
   const tokenUrl = `${MODMED_CONFIG.baseUrl}/${MODMED_CONFIG.firmUrlPrefix}/ema/ws/oauth2/grant`;
-  const params = new URLSearchParams({ grant_type: "password", username: MODMED_CONFIG.username, password: MODMED_CONFIG.password });
+  const params = new URLSearchParams({ grant_type: "password", username: MODMED_CONFIG.username||"", password: MODMED_CONFIG.password||"" });
   const response = await fetch(tokenUrl, {
     method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded", "x-api-key": MODMED_CONFIG.apiKey },
+    headers: { "Content-Type": "application/x-www-form-urlencoded", "x-api-key": MODMED_CONFIG.apiKey||"" },
     body: params,
   });
   const text = await response.text();
@@ -35,8 +35,18 @@ export async function fhirFetch(path: string, init?: RequestInit): Promise<Respo
   const url = path.startsWith("http") ? path : `${getFhirBase()}${path.startsWith("/") ? "" : "/"}${path}`;
   const headers = new Headers(init?.headers);
   headers.set("Authorization", `Bearer ${token}`);
-  headers.set("x-api-key", MODMED_CONFIG.apiKey);
+  headers.set("x-api-key", MODMED_CONFIG.apiKey||"");
   if (!headers.has("Content-Type") && init?.body) headers.set("Content-Type", "application/json");
+  return fetch(url, { ...init, headers });
+}
+
+export async function fhirS3Fetch(path: string, init?: RequestInit): Promise<Response> {
+  const token = await getAccessToken();
+  const url = path.startsWith("http") ? path : `${getFhirBase()}${path.startsWith("/") ? "" : "/"}${path}`;
+  const headers = new Headers(init?.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("x-api-key", MODMED_CONFIG.apiKey||"");
+  if (!headers.has("Content-Type") && init?.body) headers.set("Content-Type", "application/pdf");
   return fetch(url, { ...init, headers });
 }
 
@@ -60,7 +70,7 @@ export async function searchPatients(params: { name?: string; id?: string; ident
   if (params.birthDate) query.set("birthdate", params.birthDate);
   const res = await fhirFetch(`/Patient?${query.toString()}`);
   const text = await res.text();
-  console.log
+  console.log("fech result is: ",res)
   if (!res.ok) throw new Error(text);
   return JSON.parse(text);
 }

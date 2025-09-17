@@ -40,24 +40,6 @@ export default function ExistingAppointments({
 
       <div className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end">
         <div className="flex flex-col">
-          <label className="text-sm">Start Date</label>
-          <input
-            type="date"
-            value={start}
-            onChange={(e) => dispatch(setStart(e.target.value))}
-            className="border rounded px-2 py-1"
-          />
-        </div>
-        <div className="flex flex-col">
-          <label className="text-sm">End Date</label>
-          <input
-            type="date"
-            value={end}
-            onChange={(e) => dispatch(setEnd(e.target.value))}
-            className="border rounded px-2 py-1"
-          />
-        </div>
-        <div className="flex flex-col">
           <label className="text-sm">Patient ID</label>
           <input
             type="text"

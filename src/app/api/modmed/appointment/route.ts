@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   try {
     const res = await fhirFetch(`/Appointment?${searchParams.toString()}`);
+    console.log("res is: ",res)
     const text = await res.text();
     if (!res.ok) return NextResponse.json({ error: text }, { status: res.status });
     return NextResponse.json(JSON.parse(text));

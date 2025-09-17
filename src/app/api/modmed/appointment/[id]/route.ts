@@ -1,11 +1,12 @@
 import { fhirFetch } from "@/lib/fhir";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
+    const { id } =await context.params;
     const resource = await req.json();
 
-    const updated = await fhirFetch(`Appointment/${params.id}`, {
+    const updated = await fhirFetch(`Appointment/${id}`, {
       method: "PUT",
       body: JSON.stringify(resource),
       headers: {

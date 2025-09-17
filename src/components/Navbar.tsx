@@ -19,6 +19,12 @@ export default function Navbar() {
             <Link href="/appointments" className={linkClass("/appointments")}>
               Appointments
             </Link>
+            <Link href="/encounter" className={linkClass("/encounter")}>
+              Encounter
+            </Link>
+            <Link href="/config" className={linkClass("/config")}>
+              Config
+            </Link>
           </nav>
         </div>
       </div>

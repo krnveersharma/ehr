@@ -24,6 +24,7 @@ export default function AppointmentTable({
   const onSubmit=async(data: { id: string, data: any })=>{
     await dispatch(updateAppointment({ id: data.id, data }))
     dispatch(applyAppointmentFilter());
+    setSelectedAppointment(null)
   }
   
     const handleCancel = (appointment:any) => {
